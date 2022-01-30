@@ -9,7 +9,7 @@ my @really-strings = <char chararray gchar gchararray>;
 
 sub get-vtype-rw ($gtype) {
   my ($vtype-r, $vtype-w);
-  my $i = ' ' x 8;
+  my $i = ' ' x 6;
   if $gtype ne '-type-' {
     $_ = $*types;
     my $u = S/^ 'g'//;
@@ -55,19 +55,19 @@ sub genSub ($mn, $rw, $gtype, $dep, $vtype-r, $vtype-w) {
 
   with $rw {
     %c<read> =
-      '$gv = GLib::Value.new(' ~
-      "\n\t  " ~ "self.prop_get('{ $mn }', \$gv)\n" ~
-      "\t);\n" ~
+      "\t  \$gv = GLib::Value.new(" ~
+      "\n\t" ~ "self.prop_get('{ $mn }', \$gv)\n" ~
+      ' ' x 6 ~ ");\n" ~
       $vtype-r
-    if $rw.any eq 'Read';
+    if $rw.any.contains('read');
 
     %c<write> =
       "{ $vtype-w }\n" ~
-      "        self.prop_set(\'{ $mn }\', \$gv);"
-    if $rw.any eq 'Write';
+      ' ' x 6 ~ "self.prop_set(\'{ $mn }\', \$gv);"
+    if $rw.any.contains('write');
 
     %c<write> = "warn '{ $mn } is a construct-only attribute'"
-      if $rw.any eq 'Construct';
+      if $rw.any.contains('construct');
   }
 
   %c<write> //= "warn '{ $mn } does not allow writing'";
@@ -76,7 +76,7 @@ sub genSub ($mn, $rw, $gtype, $dep, $vtype-r, $vtype-w) {
   # Read warnings should appear behind a DEBUG sentinel.
   %c<read>  //= qq:to/READ/;
 warn '{ $mn } does not allow reading' if \$DEBUG;
-{ $gtype eq 'G_TYPE_STRING' ?? "''" !! '0' };
+{ $gtype eq 'G_TYPE_STRING' ?? "''" !! ' ' x 6 ~ '0' };
 READ
 
   my $deprecated = '';
@@ -91,7 +91,7 @@ READ
       my \$gv = GLib::Value.new( { $gtype } );
       Proxy.new(
         FETCH => sub (\$) \{
-          { %c<read> }
+          { %c<read>.trim }
         \},
         STORE => -> \$, { $*co // '' } \$val is copy \{
           { %c<write> }
@@ -143,7 +143,7 @@ sub generateFromDOM ($dom, $control, $var) {
           'Flags'? ': '
           ('Read' | 'Write' | 'Construct')+ % ' / '
         / {
-          $rw = $/[0].Array;
+          $rw = $/[0].map( *.lc ).Array;
         }
       }
       # Due to the variety of types, this isn't the only place to look...
@@ -152,7 +152,7 @@ sub generateFromDOM ($dom, $control, $var) {
           'Flags'? ': '
           ('Read' | 'Write' | 'Construct')+ % ' / '
         / {
-          $rw = $/[0].Array;
+          $rw = $/[0].map( *.lc ).Array;
         }
       }
 
@@ -175,6 +175,73 @@ sub generateFromDOM ($dom, $control, $var) {
   }
 }
 
+sub generateFromFile ($type-prefix, $control is copy, $var) {
+  say "Loading: { $control }";
+  $control = $control.subst('file://', '');
+
+  # First part must come from header (.h) file
+  my $contents = $control.ends-with('.h') ??
+    $control.IO.slurp !!
+    $control.IO.extension('h').IO.slurp;
+
+  my $search = $contents ~~ /
+    'G_TYPE_CHECK_INSTANCE_CAST' .+? $<t>=[ <{ $type-prefix }> \w+ ] ')' $$
+  /;
+
+  my $control-type = $/<t>.Str if $/<t>;
+
+  die 'Could not find name of control!' unless $control-type;
+
+  # Final part must come from implementation (.c) file
+  $contents = $control.ends-with('.h') ??
+    $control.IO.slurp !!
+    $control.IO.extension('c').IO.slurp;
+
+  $search = $contents ~~ m:g/
+    'g_param_spec_' (\w+) <.ws>? '(' <.ws>?
+      $<params>=[
+        [ $<p>=<-[,]>+? ]+ % ','
+      ]
+      <.ws>? ');'
+  /;
+
+  my %properties;
+  for $search[] {
+    my $prop-name = .<p>[0].Str;
+    my $rw = .<p>.tail
+                 .split(' | ')
+                 .map({
+                    my $rw-mapped = .trim
+                                    .lc
+                                    .subst('g_param_')
+                                    .subst('able', '')
+                                    .subst('_only', '')
+                                    .map({
+                                      $_ ~~ / 'writ' ')'?/  ?? 'write' !! $_
+                                    });
+
+                    $rw-mapped = ('read', 'write') if $rw-mapped eq 'readwrite';
+
+                    |$rw-mapped;
+                  })
+                 .Array;
+
+    my $type = my $*types = $type-prefix ~ .<p>[3].split('_')
+                                     .skip(2)
+                                     .map( *.lc.tc )
+                                     .join;
+
+    my $dep = False;
+    genSub(
+      $prop-name.subst('"', '', :g),
+      $rw,
+      $type,
+      $dep,
+      |get-vtype-rw($type)
+    )
+  }
+}
+
 sub MAIN (
   $control           is copy,
   :$var              is copy = 'w',
@@ -188,31 +255,7 @@ sub MAIN (
     when 'file' | $control.ends-with('.c') {
       die 'Must specify --type-prefix!' unless $type-prefix;
 
-      say "Loading: { $control }";
-      $control = $control.subst('file://', '');
-
-      # First part must come from header (.h) file
-      my $contents = $control.ends-with('.h') ??
-        $control.IO.slurp !!
-        $control.IO.extension('h').IO.slurp;
-
-      my $search = $contents ~~ /
-        'G_TYPE_CHECK_INSTANCE_CAST' .+? $<t>=[ <{ $type-prefix }> \w+ ] ')' $$
-      /;
-
-      my $control-type = $/<t>.Str if $/<t>;
-
-      die 'Could not find name of control!' unless $control-type;
-
-      # Final part must come from implementation (.c) file
-      $contents = $control.ends-with('.h') ??
-        $control.IO.slurp !!
-        $control.IO.extension('c').IO.slurp;
-
-      # Note variable re-use!
-      $control = $control-type;
-
-      exit;
+      generateFromFile($type-prefix, $control, $var);
     }
 
     when 'http' | 'https' | $control.ends-with('.html') {

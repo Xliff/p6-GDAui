@@ -5,7 +5,17 @@ use LWP::Simple;
 #use Mojo::DOM:from<Perl5>;
 use DOM::Tiny;
 
-my @really-strings = <char chararray gchar gchararray>;
+my @really-strings = <char uchar gchar guchar chararray gchararray unichar>;
+my @gtypes = <
+  boolean
+  int      uint
+  long     ulong
+  int64    uint64
+  double
+  float
+  string
+  pointer
+>;
 
 sub get-vtype-rw ($gtype) {
   my ($vtype-r, $vtype-w);
@@ -29,19 +39,20 @@ sub get-vtype-rw ($gtype) {
 
 sub getType {
   do given $*types {
-    when 'gboolean' { $*co = 'Int()'; 'G_TYPE_BOOLEAN' }
-    when 'gint'     { $*co = 'Int()'; 'G_TYPE_INT'     }
-    when 'gint64'   { $*co = 'Int()'; 'G_TYPE_INT64'   }
-    when 'guint64'  { $*co = 'Int()'; 'G_TYPE_UINT64'  }
-    when 'guint'    { $*co = 'Int()'; 'G_TYPE_UINT'    }
-    when 'glong'    { $*co = 'Int()'; 'G_TYPE_LONG'    }
-    when 'gulong'   { $*co = 'Int()'; 'G_TYPE_ULONG'   }
-    when 'gdouble'  { $*co = 'Num()'; 'G_TYPE_DOUBLE'  }
-    when 'gfloat'   { $*co = 'Num()'; 'G_TYPE_FLOAT'   }
+    when 'gboolean' | 'boolean' { $*co = 'Int()'; 'G_TYPE_BOOLEAN' }
+    when 'gint'     | 'int'     { $*co = 'Int()'; 'G_TYPE_INT'     }
+    when 'gint64'   | 'int64'   { $*co = 'Int()'; 'G_TYPE_INT64'   }
+    when 'guint64'  | 'uint64'  { $*co = 'Int()'; 'G_TYPE_UINT64'  }
+    when 'guint'    | 'uint'    { $*co = 'Int()'; 'G_TYPE_UINT'    }
+    when 'glong'    | 'long'    { $*co = 'Int()'; 'G_TYPE_LONG'    }
+    when 'gulong'   | 'ulong'   { $*co = 'Int()'; 'G_TYPE_ULONG'   }
+    when 'gdouble'  | 'double'  { $*co = 'Num()'; 'G_TYPE_DOUBLE'  }
+    when 'gfloat'   | 'float'   { $*co = 'Num()'; 'G_TYPE_FLOAT'   }
 
-    when @really-strings.any {
-      $*co = 'Str()'; 'G_TYPE_STRING';
-    }
+    when 'gpointer' | 'pointer' {                 'G_TYPE_POINTER' }
+
+    when @really-strings.any    { $*co = 'Str()'; 'G_TYPE_STRING'  }
+
     default {
       '-type-'
     }
@@ -226,10 +237,17 @@ sub generateFromFile ($type-prefix, $control is copy, $var) {
                   })
                  .Array;
 
-    my $type = my $*types = $type-prefix ~ .<p>[3].split('_')
-                                     .skip(2)
-                                     .map( *.lc.tc )
-                                     .join;
+    my $*co;
+    my $type = my $*types = .[0].Str;
+    $type = do if $type eq @gtypes.any {
+      $*types = $type;
+      getType
+    } else {
+      $*types = $type-prefix ~ .<p>[3].split('_')
+                                      .skip(2)
+                                      .map( *.lc.tc )
+                                      .join;
+    }
 
     my $dep = False;
     genSub(

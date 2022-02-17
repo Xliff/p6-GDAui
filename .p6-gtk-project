@@ -1,0 +1,9 @@
+prefix=GDA::UI
+modules=GDA::Raw::UI::Types
+lib=gdaui
+call_prefix=gda_
+include-directory=/usr/src/libgda5-5.2.10/libgda-ui
+backups=backup,bitbucket,google-backup,azure-backup,hut
+build_exclude=
+struct-prefix=Gda
+exec=gdaexec

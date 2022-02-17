@@ -13,7 +13,7 @@ use GTK::Box;
 our subset GdauiDataProxyInfoAncestry is export of Mu
   where GdauiDataProxyInfo | GtkBoxAncestry;
 
-class GDA::UI::DataProxyInfo is GTK::Box {
+class GDA::UI::Data::ProxyInfo is GTK::Box {
   has GdauiDataProxyInfo $!gudpi;
 
   submethod BUILD( :$gda-data-proxy-info ) {

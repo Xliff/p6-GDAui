@@ -5,6 +5,10 @@ use LWP::Simple;
 #use Mojo::DOM:from<Perl5>;
 use DOM::Tiny;
 
+use lib <scripts .>;
+
+use GTKScripts;
+
 my @really-strings = <char uchar gchar guchar chararray gchararray unichar>;
 my @gtypes = <
   boolean
@@ -272,6 +276,8 @@ sub MAIN (
   given $/<con> {
     when 'file' | $control.ends-with('.c') {
       die 'Must specify --type-prefix!' unless $type-prefix;
+      $control = %config<include-directory>.IO.add($control).absolute
+	unless $control.starts-with('/');
 
       generateFromFile($type-prefix, $control, $var);
     }

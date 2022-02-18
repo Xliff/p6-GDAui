@@ -18,7 +18,7 @@ class GDA::UI::Data::Store {
   also does GLib::Roles::Object;
   also does GTK::Roles::TreeModel;
 
-  has GdauiDataStore $!guds;
+  has GdauiDataStore $!guds is implementor;
 
   submethod BUILD ( :$gdaui-data-store ) {
     self.setGdauiDataStore($gdaui-data-store) if $gdaui-data-store;
@@ -53,7 +53,14 @@ class GDA::UI::Data::Store {
     is also<GdauiDataStore>
   { $!guds }
 
-  method new (GdaDataModel() $model) {
+  multi method new (GdauiDataStoreAncestry $gdaui-data-store, :$ref = True) {
+    return Nil unless $gdaui-data-store;
+
+    my $o = self.bless( :$gdaui-data-store );
+    $o.ref if $ref;
+    $o;
+  }
+  multi method new (GdaDataModel() $model) {
     my $gdaui-data-store = gdaui_data_store_new($model);
 
     $gdaui-data-store ?? self.bless( :$gdaui-data-store ) !! Nil;

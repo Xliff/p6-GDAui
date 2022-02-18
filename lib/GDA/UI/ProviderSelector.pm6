@@ -11,7 +11,7 @@ our subset GdauiProviderSelectorAncestry is export of Mu
   where GdauiProviderSelector | GdauiComboAncestry;
 
 class GDA::UI::ProviderSelector is GDA::UI::Combo {
-  has GdauiProviderSelector $!gups;
+  has GdauiProviderSelector $!gups is implementor;
 
   submethod BUILD ( :$gdai-ui-provider-selector ) {
     self.setGdauiProviderSelector($gdai-ui-provider-selector)

@@ -14,7 +14,7 @@ our subset GdauiRawFormAncestry is export of Mu
   where GdauiRawForm | GdauiBasicFormAncestry;
 
 class GDA::UI::RawForm is GDA::UI::BasicForm {
-  has GdauiRawForm $!gurf;
+  has GdauiRawForm $!gurf is implementor;
 
   submethod BUILD ( :$gda-ui-raw-form ) {
     self.setGdauiRawForm($gda-ui-raw-form) if $gda-ui-raw-form;

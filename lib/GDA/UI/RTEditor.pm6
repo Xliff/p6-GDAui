@@ -15,7 +15,7 @@ our subset GdauiRtEditorAncestry is export of Mu
 class GDA::UI::RTEditor is GTK::Box {
   also does GLib::Roles::Signals::Generic;
 
-  has GdauiRtEditor $!gurte;
+  has GdauiRtEditor $!gurte is implementor;
 
   submethod BUILD ( :$gda-ui-rt-editor ) {
     self.setGdauiRtEditor($gda-ui-rt-editor) if $gda-ui-rt-editor;

@@ -13,7 +13,7 @@ our subset GdauiRawGridAncestry is export of Mu
 class GDA::UI::RawGrid is GTK::TreeView {
   also does GLib::Roles::Signals::Generic;
 
-  has GdauiRawGrid $!gurg;
+  has GdauiRawGrid $!gurg is implementor;
 
   submethod BUILD ( :$gda-ui-raw-grid ) {
     self.setGdauiRawGrid($gda-ui-raw-grid) if $gda-ui-raw-grid;

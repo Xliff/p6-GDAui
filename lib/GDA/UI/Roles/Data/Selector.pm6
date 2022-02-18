@@ -13,7 +13,7 @@ use GDA::UI::Roles::Signals::Data::Selector;
 role GDA::UI::Roles::Data::Selector {
   also does GDA::UI::Roles::Signals::Data::Selector;
 
-  has GdauiDataSelector $!guds;
+  has GdauiDataSelector $!guds is implementor;
 
   method roleInit-GdauiDataSelector is also<roleInit_GdauiDataSelector> {
     my \i = findProperImplementor( self.^attributes );

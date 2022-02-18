@@ -12,7 +12,7 @@ our subset GdauiFormAncestry is export of Mu
   where GdauiForm | GtkBoxAncestry;
 
 class GDA::UI::Form is GTK::Box {
-  has GdauiForm $!guf;
+  has GdauiForm $!guf is implementor;
 
   submethod BUILD( :$gda-form ) {
     self.setGdauiForm($gda-form) if $gda-form;

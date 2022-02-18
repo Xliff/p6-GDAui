@@ -12,7 +12,7 @@ our subset GdauiComboAncestry is export of Mu
   where GdauiCombo | GtkComboBoxAncestry;
 
 class GDA::UI::Combo is GTK::ComboBox {
-  has GdauiCombo $!guc;
+  has GdauiCombo $!guc is implementor;
 
   submethod BUILD( :$gda-combo ) {
     self.setGdauiCombo($gda-combo) if $gda-combo;

@@ -13,7 +13,7 @@ our subset GdauiLoginAncestry is export of Mu
 class GDA::UI::Login is GTK::Box {
   also does GDA::UI::Roles::Signals::Login;
 
-  has GdauiLogin $!gul;
+  has GdauiLogin $!gul is implementor;
 
   submethod BUILD ( :$gdaui-login ) {
     self.setGdauiLogin($gdaui-login) if $gdaui-login;

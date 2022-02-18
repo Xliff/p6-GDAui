@@ -12,7 +12,7 @@ our subset GdauiServerOperationAncestry is export of Mu
   where GdauiServerOperation | GtkBoxAncestry;
 
 class GDA::UI::Server::Operation is GTK::Box {
-  has GdauiServerOperation $!guso;
+  has GdauiServerOperation $!guso is implementor;
 
   submethod BUILD( :$gda-server-operation ) {
     self.setGdauiServerOperation($gda-server-operation)
@@ -61,7 +61,7 @@ class GDA::UI::Server::Operation is GTK::Box {
     GtkWindow()          $parent,
     Str()                $title,
     Str()                $header
-  ) 
+  )
     is also<new-in-dialog>
   {
     my $gdaui-server-operation = gdaui_server_operation_new_in_dialog(

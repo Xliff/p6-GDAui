@@ -6,4 +6,3 @@ include-directory=/usr/src/libgda5-5.2.10/libgda-ui
 backups=backup,bitbucket,google-backup,azure-backup,hut
 build_exclude=
 struct-prefix=Gda
-exec=gdaexec

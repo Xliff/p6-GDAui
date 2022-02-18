@@ -396,3 +396,18 @@ class WidgetEmbedder is repr<CStruct> is export {
 # class WidgetEmbedderClass is repr<CStruct> is export {
 #   HAS GtkContainerClass $!parent_class;
 # }
+
+class GdauiSetSource is repr<CStruct> is export {
+  has GdaSetSource  $.source;
+  has gint          $.show_n_cols;
+  has CArray[gint]  $.show_cols_index;              #= Pointer?
+  has gint          $.ref_n_cols;
+  has CArray[gint]  $.ref_cols_index;               #= Pointer?
+  HAS gpointer      @.reserved[4]       is CArray;
+}
+
+class GdauiSetGroup is repr<CStruct> is export {
+  has GdaSetGroup    $.group;
+  has GdauiSetSource $.source-ui;
+  HAS gpointer       @.reserved[2]      is CArray;
+}

@@ -2,28 +2,33 @@ use v6.c;
 
 use NativeCall;
 
-unit package GDA::UI::Raw::Set;
+use GLib::Raw::Definitions;
+use GLib::Raw::Enums;
+use GDA::Raw::Structs;
+use GDA::UI::Raw::Definitions;
+use GDA::UI::Raw::Structs;
 
+unit package GDA::UI::Raw::Set;
 
 ### /usr/src/libgda5-5.2.10/libgda-ui/gdaui-set.h
 
-sub _gdaui_set_get_group (GdauiSet $dbset, GdaHolder $holder)
-  returns GdauiSetGroup
-  is native(gdaui)
-  is export
-{ * }
-
-sub _gdaui_set_get_type ()
-  returns GType
-  is native(gdaui)
-  is export
-{ * }
-
-sub _gdaui_set_new (GdaSet $set)
-  returns GdauiSet
-  is native(gdaui)
-  is export
-{ * }
+# sub _gdaui_set_get_group (GdauiSet $dbset, GdaHolder $holder)
+#   returns GdauiSetGroup
+#   is native(gdaui)
+#   is export
+# { * }
+#
+# sub _gdaui_set_get_type ()
+#   returns GType
+#   is native(gdaui)
+#   is export
+# { * }
+#
+# sub _gdaui_set_new (GdaSet $set)
+#   returns GdauiSet
+#   is native(gdaui)
+#   is export
+# { * }
 
 sub gdaui_set_get_group (GdauiSet $dbset, GdaHolder $holder)
   returns GdauiSetGroup
@@ -143,7 +148,7 @@ sub gdaui_set_source_new (GdaSetSource $source)
 
 sub gdaui_set_source_set_ref_columns (
   GdauiSetSource $s,
-  CArray[gint]   $columns, 
+  CArray[gint]   $columns,
   gint           $n_columns
 )
   is native(gdaui)
@@ -152,7 +157,7 @@ sub gdaui_set_source_set_ref_columns (
 
 sub gdaui_set_source_set_shown_columns (
   GdauiSetSource $s,
-  CArray[gint]   $columns, 
+  CArray[gint]   $columns,
   gint           $n_columns
 )
   is native(gdaui)

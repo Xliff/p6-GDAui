@@ -1,13 +1,18 @@
 use v6.c;
 
+use NativeCall;
+use Method::Also;
+
 use GDA::UI::Raw::Types;
 use GDA::UI::Raw::Set;
 
-use GDA::Data::Source;
 use GDA::Set;
 
 use GLib::Roles::Object;
 use GDA::UI::Roles::Signals::Set;
+
+# Pre-declaration
+class GDA::UI::Set::Source { ... }
 
 # BOXED
 class GDA::UI::Set::Group {
@@ -23,15 +28,15 @@ class GDA::UI::Set::Group {
     is also<GdauiSetGroup>
   { $!gusg }
 
-  multi method new (GdauiSetGroup $gda-ui-set-group, :$ref = True) {
+  multi method new (GdauiSetGroup() $gda-ui-set-group, :$ref = True) {
     return Nil unless $gda-ui-set-group;
 
-    my $o = self.bless( :$gda-ui-set-group )
+    my $o = self.bless( :$gda-ui-set-group );
     $o.ref if $ref;
     $o;
   }
-  method new {
-    my $gda-ui-set-group = gdaui_set_group_new();
+  multi method new (GdaSetGroup() $group) {
+    my $gda-ui-set-group = gdaui_set_group_new($group);
 
     $gda-ui-set-group ?? self.bless( :$gda-ui-set-group ) !! Nil;
   }
@@ -48,7 +53,7 @@ class GDA::UI::Set::Group {
     gdaui_set_group_free($!gusg);
   }
 
-  method get_group ( :$raw = False ) {
+  method get_group ( :$raw = False ) is also<get-group> {
     propReturnObject(
       gdaui_set_group_get_group($!gusg),
       $raw,
@@ -56,28 +61,28 @@ class GDA::UI::Set::Group {
     );
   }
 
-  method get_source ( :$raw = False ) {
+  method get_source ( :$raw = False ) is also<get-source> {
     propReturnObject(
       gdaui_set_group_get_source($!gusg),
       $raw,
-      |GDA::Data::Source.getTypePair
+      |GDA::UI::Set::Source.getTypePair
     );
   }
 
-  method get_type {
+  method get_type is also<get-type> {
     state ($n, $t);
 
     unstable_get_type( self.^name, &gdaui_set_group_get_type, $n, $t );
   }
 
-  method set_group (GdaSetGroup() $group) {
+  method set_group (GdaSetGroup() $group) is also<set-group> {
     gdaui_set_group_set_group($!gusg, $group);
   }
 
-  method set_source (GdauiSetSource() $source) {
+  method set_source (GdauiSetSource() $source) is also<set-source> {
     gdaui_set_group_set_source($!gusg, $source);
   }
-  
+
 }
 
 our subset GdauiSetAncestry is export of Mu
@@ -118,11 +123,11 @@ class GDA::UI::Set {
   multi method new (GdauiSetAncestry $gda-ui-set, :$ref = True) {
     return Nil unless $gda-ui-set;
 
-    my $o = self.bless( :$gda-ui-set )
+    my $o = self.bless( :$gda-ui-set );
     $o.ref if $ref;
     $o;
   }
-  method new (GDASet() $set) {
+  multi method new (GdaSet() $set) {
     my $gda-ui-set = gdaui_set_new($set);
 
     $gda-ui-set ?? self.bless( :$gda-ui-set ) !! Nil;
@@ -130,18 +135,18 @@ class GDA::UI::Set {
 
   # Is originally:
   # GdauiSet *set,
-  method public-data-changed {
+  method public-data-changed is also<public_data_changed> {
     self.connect-set($!gus, 'public-data-changed');
   }
 
   # Is originally:
   # GdauiSet *set, GdauiSetSource *source --> void
-  method source-model-changed {
+  method source-model-changed is also<source_model_changed> {
     self.connect-source-model-changed($!gus);
   }
 
 
-  method get_group (GdaHolder() $holder, :$raw = False) {
+  method get_group (GdaHolder() $holder, :$raw = False) is also<get-group> {
     propReturnObject(
       gdaui_set_get_group($!gus, $holder),
       $raw,
@@ -149,7 +154,7 @@ class GDA::UI::Set {
     )
   }
 
-  method get_type {
+  method get_type is also<get-type> {
     state ($n, $t);
 
     unstable_get_type( self.^name, &gdaui_set_get_type, $n, $t );
@@ -171,7 +176,7 @@ class GDA::UI::Set::Source {
     is also<GdauiSetSource>
   { $!guss }
 
-  multi method new (GdauiSetSourceAncestry $gda-ui-set-source, :$ref = True) {
+  multi method new (GdauiSetSource() $gda-ui-set-source, :$ref = True) {
     return Nil unless $gda-ui-set-source;
 
     my $o = self.bless( :$gda-ui-set-source );
@@ -186,7 +191,7 @@ class GDA::UI::Set::Source {
 
   method copy (:$raw = False) {
     propReturnObject(
-      gdaui_set_source_copy($!gus),
+      gdaui_set_source_copy($!guss),
       $raw,
       |self.getTypePair
     );
@@ -196,7 +201,7 @@ class GDA::UI::Set::Source {
     gdaui_set_source_free($!guss);
   }
 
-  method get_ref_columns ( :$raw = False ) {
+  method get_ref_columns ( :$raw = False ) is also<get-ref-columns> {
     my $ca = gdaui_set_source_get_ref_columns($!guss);
 
     return $ca if $raw;
@@ -204,11 +209,11 @@ class GDA::UI::Set::Source {
     CArrayToArray($ca);
   }
 
-  method get_ref_n_cols  {
+  method get_ref_n_cols  is also<get-ref-n-cols> {
     gdaui_set_source_get_ref_n_cols($!guss);
   }
 
-  method get_shown_columns ( :$raw = False ) {
+  method get_shown_columns ( :$raw = False ) is also<get-shown-columns> {
     my $ca = gdaui_set_source_get_shown_columns($!guss);
 
     return $ca if $raw;
@@ -216,11 +221,11 @@ class GDA::UI::Set::Source {
     CArrayToArray($ca);
   }
 
-  method get_shown_n_cols {
+  method get_shown_n_cols is also<get-shown-n-cols> {
     gdaui_set_source_get_shown_n_cols($!guss);
   }
 
-  method get_source ( :$raw = False ) {
+  method get_source ( :$raw = False ) is also<get-source> {
     propReturnObject(
       gdaui_set_source_get_source($!guss),
       $raw,
@@ -228,13 +233,14 @@ class GDA::UI::Set::Source {
     );
   }
 
-  method get_type {
+  method get_type is also<get-type> {
     state ($n, $t);
 
     unstable_get_type( self.^name, &gdaui_set_source_get_type, $n, $t );
   }
 
   proto method set_ref_columns (|)
+    is also<set-ref-columns>
   { * }
 
   multi method set_ref_columns (@columns) {
@@ -247,6 +253,7 @@ class GDA::UI::Set::Source {
   }
 
   proto method set_shown_columns (|)
+    is also<set-shown-columns>
   { * }
 
   multi method set_shown_columns (@columns) {
@@ -258,7 +265,7 @@ class GDA::UI::Set::Source {
     gdaui_set_source_set_shown_columns($!guss, $columns, $n);
   }
 
-  method set_source (GdaSetSource() $source) {
+  method set_source (GdaSetSource() $source) is also<set-source> {
     gdaui_set_source_set_source($!guss, $source);
   }
 

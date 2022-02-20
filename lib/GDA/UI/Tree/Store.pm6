@@ -7,6 +7,8 @@ use NativeCall;
 use GDA::UI::Raw::Types;
 use GDA::UI::Raw::Tree::Store;
 
+use GDA::Tree::Node;
+
 use GLib::Roles::Object;
 use GTK::Roles::TreeModel;
 use GDA::UI::Roles::Signals::Tree::Store;

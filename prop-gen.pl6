@@ -9,7 +9,14 @@ use lib <scripts .>;
 
 use GTKScripts;
 
-my @really-strings = <char uchar gchar guchar chararray gchararray unichar>;
+my @really-strings = <
+  char      gchar
+  uchar     guchar
+  chararray gchararray
+  unichar
+  string    gstring
+>;
+
 my @gtypes = <
   boolean
   int      uint

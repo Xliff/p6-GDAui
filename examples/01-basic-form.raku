@@ -39,7 +39,9 @@ sub MAIN {
   # cncstring = g_strdup_printf ("DB_DIR=%s;DB_NAME=demo_db", dirname);
   $dirname .= add('examples') unless $dirname.add('demo_db.db').r;
 
-  my $cncstring = "DB_DIR={ $dirname.dirname };DB_NAME=demo_db";
+  $dirname.absolute.say;
+
+  my $cncstring = "DB_DIR={ $dirname.absolute };DB_NAME=demo_db";
   my $demo-cnc = GDA::Connection.open-from-string('SQlite', $cncstring);
   without $demo-cnc {
     $*ERR.say: "Error opening the connection for file `demo_db.db`: {
@@ -78,8 +80,8 @@ sub MAIN {
 
   my $app = GTK::Application.new(
     title       => 'org.genex.ui.gda.basicform',
-    width       => 800,
-    height      => 600
+    width       => 500,
+    height      => 300
   );
 
   $app.activate.tap(-> *@a {
@@ -87,19 +89,12 @@ sub MAIN {
 
     $app.wait-for-init;
 
-    my $window = GTK::Dialog.new-with-buttons(
-      'GdaUIBasicForm',
-      $app.window,
-      0,
-      Close => GTK_RESPONSE_NONE
-    );
-
     # $window.response.tap(-> *@a { @a.head.destroy   } );
     # $window.destroy.tap( -> *@a { @a.head.destroyed } );
 
     my $vbox = GTK::Box.new-vbox(5);
     $vbox.border-width = 5;
-    $window.get-content-area.pack-start($vbox, True, True);
+    $app.window.add($vbox);
 
     my $label = GTK::Label.new( q:to/LABEL/ );
       This example shows 2 GdauiBasicForm widgets operating on the

@@ -19,11 +19,11 @@ class GDA::UI::BasicForm is GTK::Box {
 
   has GdauiBasicForm $!gubf is implementor;
 
-  submethod BUILD( :$gda-basic-form ) {
-    self.setGduiBasicForm($gda-basic-form) if $gda-basic-form;
+  submethod BUILD( :$gda-ui-basic-form ) {
+    self.setGdauiBasicForm($gda-ui-basic-form) if $gda-ui-basic-form;
   }
 
-  method setGdaUiBasicForm (GdauiBasicFormAncestry $_) {
+  method setGdauiBasicForm (GdauiBasicFormAncestry $_) {
     my $to-parent;
 
     $!gubf = do {
@@ -47,10 +47,10 @@ class GDA::UI::BasicForm is GTK::Box {
   proto method new (|)
   { * }
 
-  multi method new (GdauiBasicFormAncestry $gda-basic-form, :$ref = True) {
-    return Nil unless $gda-basic-form;
+  multi method new (GdauiBasicFormAncestry $gda-ui-basic-form, :$ref = True) {
+    return Nil unless $gda-ui-basic-form;
 
-    my $o = self.bless(:$gda-basic-form);
+    my $o = self.bless(:$gda-ui-basic-form);
     $o.ref if $ref;
     $o;
   }

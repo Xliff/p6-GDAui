@@ -8,10 +8,16 @@ use GDA::UI::Raw::Types;
 use GLib::Value;
 use GTK::Box;
 
+use GDA::UI::Roles::Data::Proxy;
+use GDA::UI::Roles::Data::Selector;
+
 our subset GdauiFormAncestry is export of Mu
-  where GdauiForm | GtkBoxAncestry;
+  where GdauiForm | GdauiDataProxy | GdauiDataSelector | GtkBoxAncestry;
 
 class GDA::UI::Form is GTK::Box {
+  also does GDA::UI::Roles::Data::Proxy;
+  also does GDA::UI::Roles::Data::Selector;
+
   has GdauiForm $!guf is implementor;
 
   submethod BUILD( :$gda-form ) {
@@ -27,17 +33,34 @@ class GDA::UI::Form is GTK::Box {
         $_;
       }
 
+      when GdauiDataProxy {
+        $to-parent = cast(GtkBox, $_);
+        $!gudp     = $_;
+        cast(GtkBox, $_);
+      }
+
+      when GdauiDataSelector {
+        $to-parent = cast(GtkBox, $_);
+        $!guds     = $_;
+        cast(GtkBox, $_);
+      }
+
       default {
         $to-parent = $_;
         cast(GtkBox, $_);
       }
     }
     self.setGtkBox($to-parent);
+    self.roleInit-GdauiDataProxy;
+    self.roleInit-GdauiDataSelector;
   }
 
   method GDA::Raw::Definitions::GdauiForm
     is also<GdauiForm>
   { $!guf }
+
+  proto method new (|)
+  { * }
 
   multi method new (GdauiFormAncestry $gda-form, :$ref = True) {
     return Nil unless $gda-form;
@@ -138,7 +161,7 @@ sub gdaui_form_get_type ()
 { * }
 
 sub gdaui_form_new (GdaDataModel $model)
-  returns GtkWidget
+  returns GdauiForm
   is native(gdaui)
   is export
 { * }

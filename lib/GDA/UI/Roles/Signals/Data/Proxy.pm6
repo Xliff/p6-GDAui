@@ -5,7 +5,7 @@ use NativeCall;
 use GDA::UI::Raw::Types;
 
 role GDA::UI::Roles::Signals::Data::Proxy {
-  has %!signals-gudp
+  has %!signals-gudp;
 
   #  GdauiDataProxy, GdaDataProxy --> void
   method connect-proxy-changed (
@@ -22,7 +22,7 @@ role GDA::UI::Roles::Signals::Data::Proxy {
             default { 𝒮.note($_) }
           }
 
-          𝒮.emit( [self, $gdp, $r] );
+          𝒮.emit( [self, $gdp] );
         },
         Pointer, 0
       );

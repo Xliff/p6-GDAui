@@ -6,6 +6,7 @@ use GDA::UI::Raw::Types;
 use GDA::UI::Raw::Data::Selector;
 
 use GLib::Array;
+use GDA::Data::Model::Iter;
 
 use GDA::Roles::Data::Model;
 use GDA::UI::Roles::Signals::Data::Selector;
@@ -31,8 +32,12 @@ role GDA::UI::Roles::Data::Selector {
     self.connect-selection-changed($!guds);
   }
 
-  method get_data_set is also<get-data-set> {
-    gdaui_data_selector_get_data_set($!guds),
+  method get_data_set ( :$raw = False ) is also<get-data-set> {
+    propReturnObject(
+      gdaui_data_selector_get_data_set($!guds),
+      $raw,
+      |GDA::Data::Model::Iter.getTypePair
+    );
   }
 
   method get_model ( :$raw = False ) is also<get-model> {

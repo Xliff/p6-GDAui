@@ -1,11 +1,13 @@
 use v6.c;
 
-use GLib::Raw::Definitions;
+use GDA::UI::Raw::Types;
 
-use GTK::Raw::Widget;
-use GTK::Raw::Enums;
+use GDA::UI::BasicForm;
 
 use GDA;
+use GDA::Holder;
+use GLib::GList;
+use GLib::GSList;
 use GDA::Set;
 use GTK::Application;
 use GTK::Box;
@@ -16,7 +18,6 @@ use GDA::Connection;
 use GDA::Meta::Store;
 use GDA::SQL::Parser;
 use GDA::UI;
-use GDA::UI::BasicForm;
 
 my $dirname = '.'.IO;
 
@@ -72,8 +73,8 @@ sub MAIN {
   # 	demo_parser = gda_connection_create_parser (demo_cnc);
   # 	if (!demo_parser)
   # 		demo_parser = gda_sql_parser_new ();
-  # my $demo-parser = $demo-cnc.create-parser;
-  # $demo-parser //= GDA::SQL::Parser.new;
+  my $demo-parser = $demo-cnc.create-parser;
+  $demo-parser //= GDA::SQL::Parser.new;
 
   my $app = GTK::Application.new(
     title       => 'org.genex.ui.gda.basicform',
@@ -81,7 +82,7 @@ sub MAIN {
     height      => 600
   );
 
-  $app.activate.tap({
+  $app.activate.tap(-> *@a {
     CATCH { default { .message.say; .backtrace.concise.say } }
 
     $app.wait-for-init;
@@ -113,12 +114,28 @@ sub MAIN {
     $vbox.pack-start($label);
 
     # .new-inline shouold take a: Pair, 2 element array, GdaHolder
-    my $set = GDA::Set.new-inline(
-      [ 'a string', 'A string Value' ],
-      [ 'an int',    12              ],
-      [ 'a picture', Nil             ]
-    );
+    my @holders;
+    for [ 'a string', 'A string Value' ],
+        [ 'an int',    12              ],
+        [ 'a picture', GdaBinary       ]
+    {
+      my $h = get-gda-holder-from-proxy-value($_);
+      @holders.push( GDA::Holder.new($h, :!ref) );
+    }
 
+    my $gslist = GLib::GSList.new(@holders);
+
+    say '-- preGS';
+    my @returned-holders = returnGSList(
+      $gslist.GSList,
+      False,
+      False,
+      |GDA::Holder.getTypePair
+    );
+    say '-- postGS';
+
+    @returned-holders.gist.say;
+    my $set = GDA::Set.new($gslist);
     my $form = GDA::UI::BasicForm.new($set);
     $vbox.pack-start($form, True, True);
     $form.entry-set-visible( $set.get-holder('an int'), False);
@@ -128,7 +145,6 @@ sub MAIN {
 
     my $form2 = GDA::UI::BasicForm.new($set);
     $vbox.pack-start($form2);
-
     my $filename = demo-find-file('custom_layout.xml');
     $form.set-layout-from-file($filename, 'simple');
 

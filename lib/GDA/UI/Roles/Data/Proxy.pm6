@@ -1,5 +1,7 @@
 use v6.c;
 
+use Method::Also;
+
 use GDA::UI::Raw::Types;
 use GDA::UI::Raw::Data::Proxy;
 
@@ -13,34 +15,38 @@ role GDA::UI::Roles::Data::Proxy {
 
   has GdauiDataProxy $!gudp is implementor;
 
-  method roleInit-GdauiDataProxy {
+  method roleInit-GdauiDataProxy is also<roleInit_GdauiDataProxy> {
     return if $!gudp;
 
     my \i = findProperImplementor(self.^attributes);
-    $!gdup = cast(GdauiDataProxy, i.get_value(self);
+    $!gudp = cast( GdauiDataProxy, i.get_value(self) );
   }
 
   # Is originally:
   # GdauiDataProxy *iface,  GdaDataProxy *proxy --> void
-  method proxy-changed {
+  method proxy-changed is also<proxy_changed> {
     self.connect-proxy-changed($!gudp);
   }
 
-  method column_set_editable (Int() $column, Int() $editable) {
+  method column_set_editable (Int() $column, Int() $editable)
+    is also<column-set-editable>
+  {
     my gint     $c = $column;
     my gboolean $e = $editable.so.Int;
 
     gdaui_data_proxy_column_set_editable($!gudp, $c, $e);
   }
 
-  method column_show_actions (Int() $column, Int() $show_actions) {
+  method column_show_actions (Int() $column, Int() $show_actions)
+    is also<column-show-actions>
+  {
     my gint     $c = $column;
     my gboolean $s = $show_actions.so.Int;
 
     gdaui_data_proxy_column_show_actions($!gudp, $c, $s);
   }
 
-  method get_actions_group ( :$raw = False ) {
+  method get_actions_group ( :$raw = False ) is also<get-actions-group> {
     propReturnObject(
       gdaui_data_proxy_get_actions_group($!gudp),
       $raw,
@@ -48,7 +54,7 @@ role GDA::UI::Roles::Data::Proxy {
     );
   }
 
-  method get_proxy ( :$raw = False ) {
+  method get_proxy ( :$raw = False ) is also<get-proxy> {
     propReturnObject(
       gdaui_data_proxy_get_proxy($!gudp),
       $raw,
@@ -56,21 +62,21 @@ role GDA::UI::Roles::Data::Proxy {
     );
   }
 
-  method gdauidataproxy_get_type {
+  method gdauidataproxy_get_type is also<gdauidataproxy-get-type> {
     state ($n, $t);
 
     unstable_get_type( self.^name, &gdaui_data_proxy_get_type, $n, $t );
   }
 
-  method get_write_mode {
+  method get_write_mode is also<get-write-mode> {
     GdauiDataProxyWriteModeEnum( gdaui_data_proxy_get_write_mode($!gudp) )
   }
 
-  method perform_action (GdauiAction() $action) {
+  method perform_action (GdauiAction() $action) is also<perform-action> {
     gdaui_data_proxy_perform_action($!gudp, $action);
   }
 
-  method set_write_mode (Int() $mode) {
+  method set_write_mode (Int() $mode) is also<set-write-mode> {
     my GdauiDataProxyWriteMode $m = $mode;
 
     gdaui_data_proxy_set_write_mode($!gudp, $mode);\
@@ -121,7 +127,7 @@ class GDA::UI::Data::Proxy {
     $o;
   }
 
-  method get_type {
+  method get_type is also<get-type> {
     self.gdauidataproxy_get_type
   }
 }

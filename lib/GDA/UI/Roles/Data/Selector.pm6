@@ -57,9 +57,10 @@ role GDA::UI::Roles::Data::Selector {
       |GLib::Array.getTypePair
     );
 
-    return $a unless $array;
+    return Nil unless $a;
+    return $a  unless $array;
 
-    $a.Array;
+    $a.setType(guint).Array;
   }
 
   method gdauidataselector_get_type is also<gdauidataselector-get-type> {

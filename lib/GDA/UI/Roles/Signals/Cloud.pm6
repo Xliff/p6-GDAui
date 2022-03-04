@@ -7,7 +7,7 @@ use GDA::UI::Raw::Types;
 
 role GDA::UI::Roles::Signals::Cloud {
   has %!signals-guc;
-  
+
   #  gint row --> void
   method connect-activate (
     $obj,
@@ -23,9 +23,7 @@ role GDA::UI::Roles::Signals::Cloud {
             default { 𝒮.note($_) }
           }
 
-          my $r = ReturnedValue.new;
-          𝒮.emit( [self, $g, $r] );
-          $r.r;
+          𝒮.emit( [self, $g] );
         },
         Pointer, 0
       );
@@ -34,6 +32,7 @@ role GDA::UI::Roles::Signals::Cloud {
     %!signals-guc{$signal}[0].tap(&handler) with &handler;
     %!signals-guc{$signal}[0];
   }
+}
 
 # GdauiCloud *cloud,  gint row
 sub g-connect-activate (

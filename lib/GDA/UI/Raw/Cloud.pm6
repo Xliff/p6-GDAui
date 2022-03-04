@@ -2,8 +2,12 @@ use v6.c;
 
 use NativeCall;
 
+use GLib::Raw::Definitions;
+use GLib::Raw::Enums;
 use GLib::Raw::Structs;
 use GDA::Raw::Definitions;
+use GDA::Raw::Structs;
+use GTK::Raw::Definitions;
 use GTK::Raw::Enums;
 use GDA::UI::Raw::Definitions;
 use GDA::UI::Raw::Structs;
@@ -47,7 +51,7 @@ sub gdaui_cloud_set_selection_mode (
 
 sub gdaui_cloud_set_weight_func (
   GdauiCloud $cloud,
-             &func (GdaModel, gint, gpointer --> gdouble),
+             &func (GdaDataModel, gint, gpointer --> gdouble),
   gpointer   $data
 )
   is native(gdaui)

@@ -1,16 +1,20 @@
 use v6.c;
 
+use Method::Also;
+
 use GDA::UI::Raw::Types;
 use GDA::UI::Raw::Cloud;
 
 use GTK::Box;
 
+use GDA::UI::Roles::Data::Selector;
 use GDA::UI::Roles::Signals::Cloud;
 
 our subset GdauiCloudAncestry is export of Mu
-  where GdauiCloud | GtkBoxAncestry;
+  where GdauiCloud | GdauiDataSelector | GtkBoxAncestry;
 
 class GDA::UI::Cloud is GTK::Box {
+  also does GDA::UI::Roles::Data::Selector;
   also does GDA::UI::Roles::Signals::Cloud;
 
   has GdauiCloud $!guc is implementor;
@@ -22,10 +26,16 @@ class GDA::UI::Cloud is GTK::Box {
   method setGdauiCloud (GdauiCloudAncestry $_) {
     my $to-parent;
 
-    $!gubf = do {
+    $!guc = do {
       when GdauiCloud {
         $to-parent = cast(GtkBox, $_);
         $_;
+      }
+
+      when GdauiDataSelector {
+        $to-parent = cast(GtkBox, $_);
+        $!guds     = $_;
+        cast(GdauiCloud, $_);
       }
 
       default {
@@ -34,11 +44,12 @@ class GDA::UI::Cloud is GTK::Box {
       }
     }
     self.setBox($to-parent);
+    self.roleInit-GdauiDataSelector;
   }
 
   method GDA::Raw::Definitions::GdauiCloud
     is also<GdauiCloud>
-  { $!gubf }
+  { $!guc }
 
   proto method new (|)
   { * }
@@ -50,17 +61,20 @@ class GDA::UI::Cloud is GTK::Box {
     $o.ref if $ref;
     $o;
   }
-
-  method new (Int() $label_column, Int() $weight_column) {
+  multi method new (
+    GdaDataModel() $model,
+    Int()          $label_column,
+    Int()          $weight_column
+  ) {
     my gint ($l, $w) = ($label_column, $weight_column);
 
-    my $gda-ui-cloud = gdaui_cloud_new($!guc, $l, $w);
+    my $gda-ui-cloud = gdaui_cloud_new($model, $l, $w);
 
-    $gda-ui-cloud = self.bless( :$gda-ui-cloud ) !! Nil;
+    $gda-ui-cloud ?? self.bless( :$gda-ui-cloud ) !! Nil;
   }
 
   # Type: int
-  method label-column is rw  {
+  method label-column is rw  is also<label_column> {
     my $gv = GLib::Value.new( G_TYPE_INT );
     Proxy.new(
       FETCH => sub ($) {
@@ -75,7 +89,7 @@ class GDA::UI::Cloud is GTK::Box {
   }
 
   # Type: double
-  method max-scale is rw  {
+  method max-scale is rw  is also<max_scale> {
     my $gv = GLib::Value.new( G_TYPE_DOUBLE );
     Proxy.new(
       FETCH => sub ($) {
@@ -90,7 +104,7 @@ class GDA::UI::Cloud is GTK::Box {
   }
 
   # Type: double
-  method min-scale is rw  {
+  method min-scale is rw  is also<min_scale> {
     my $gv = GLib::Value.new( G_TYPE_DOUBLE );
     Proxy.new(
       FETCH => sub ($) {
@@ -120,7 +134,7 @@ class GDA::UI::Cloud is GTK::Box {
   }
 
   # Type: int
-  method weight-column is rw  {
+  method weight-column is rw  is also<weight_column> {
     my $gv = GLib::Value.new( G_TYPE_INT );
     Proxy.new(
       FETCH => sub ($) {
@@ -137,30 +151,35 @@ class GDA::UI::Cloud is GTK::Box {
   # Is originally:
   # GdauiCloud *cloud,  gint row --> void
   method activate {
-    self.connect-activate($!w);
+    self.connect-activate($!guc);
   }
 
-  method create_filter_widget ( :$raw = False ) {
-    self.ReturnWidget(gdaui_cloud_create_filter_widget($!guc), $raw);
+  method create_filter_widget ( :$raw = False ) is also<create-filter-widget> {
+    self.ReturnWidget(
+      gdaui_cloud_create_filter_widget($!guc),
+      $raw
+    );
   }
 
   method filter (Str() $filter) {
     gdaui_cloud_filter($!guc, $filter);
   }
 
-  method get_type {
+  method get_type is also<get-type> {
     state ($n, $t);
 
-    unstable_get_type( self.^name, &gdaui_cloud_get_type, $m, $n )
+    unstable_get_type( self.^name, &gdaui_cloud_get_type, $n, $t )
   }
 
-  method set_selection_mode (GtkSelectionMode $mode) {
+  method set_selection_mode (GtkSelectionMode $mode)
+    is also<set-selection-mode>
+  {
     my GtkSelectionMode $m = $mode;
 
     gdaui_cloud_set_selection_mode($!guc, $m);
   }
 
-  method set_weight_func (&func, gpointer $data) {
+  method set_weight_func (&func, gpointer $data) is also<set-weight-func> {
     gdaui_cloud_set_weight_func($!guc, &func, $data);
   }
 

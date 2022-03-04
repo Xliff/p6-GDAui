@@ -67,15 +67,16 @@ class GDA::UI::Tree::Store {
     $o.ref if $ref;
     $o;
   }
-  multi method new (*%defs) {
-    samewith(%defs);
+  multi method new (GdaTree() $tree, *%defs) {
+    samewith($tree, %defs);
   }
-  multi method new (%defs) {
+  multi method new (GdaTree() $tree, %defs) {
     # cw: Yes, .keys and .values have been proven to return the same order!
-    samewith(%defs.keys, %defs.values);
+    samewith($tree, %defs.keys, %defs.values);
   }
-  multi method new (@columns, @types) {
+  multi method new (GdaTree() $tree, @columns, @types) {
     self.newv(
+      $tree,
       @columns.elems,
       ArrayToCArray(GType, @types),
       ArrayToCArray(Str, @columns)
@@ -83,6 +84,7 @@ class GDA::UI::Tree::Store {
   }
 
   method newv (
+    GdaTree()     $tree,
     Int()         $n_columns,
     CArray[GType] $types,
     CArray[Str]   $attribute_names
@@ -96,7 +98,14 @@ class GDA::UI::Tree::Store {
     die 'Column number must not be less than $n_columns!'
       unless $attribute_names >= $n_columns;
 
-    gdaui_tree_store_newv($!guts, $n_columns, $types, $attribute_names);
+    my $gda-ui-tree-store = gdaui_tree_store_newv(
+      $tree,
+      $n_columns,
+      $types,
+      $attribute_names
+    );
+
+    $gda-ui-tree-store ?? self.bless( :$gda-ui-tree-store ) !! Nil;
   }
 
   # Is originally:
@@ -128,7 +137,6 @@ class GDA::UI::Tree::Store {
   method drag-get {
     self.connect-dnd($!guts, 'drag-get');
   }
-
 
   multi method get_iter (GtkTreeIter() $iter, GdaTreeNode() $node)
     is also<get-iter>

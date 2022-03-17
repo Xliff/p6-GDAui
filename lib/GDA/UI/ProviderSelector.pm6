@@ -5,6 +5,7 @@ use Method::Also;
 use GDA::UI::Raw::Types;
 use GDA::UI::Raw::ProviderSelector;
 
+use GDA::Server::Provider;
 use GDA::UI::Combo;
 
 our subset GdauiProviderSelectorAncestry is export of Mu
@@ -32,7 +33,7 @@ class GDA::UI::ProviderSelector is GDA::UI::Combo {
         cast(GdauiProviderSelector, $_);
       }
     }
-    self.setGdauiCombi($to-parent);
+    self.setGdauiCombo($to-parent);
   }
 
   method GDA::UI::Raw::Structs::GdauiProviderSelector

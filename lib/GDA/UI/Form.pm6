@@ -55,7 +55,7 @@ class GDA::UI::Form is GTK::Box {
     self.roleInit-GdauiDataSelector;
   }
 
-  method GDA::Raw::Definitions::GdauiForm
+  method GDA::Raw::Structs::GdauiForm
     is also<GdauiForm>
   { $!guf }
 

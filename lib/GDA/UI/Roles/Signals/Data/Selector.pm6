@@ -4,6 +4,8 @@ use NativeCall;
 
 use GDA::UI::Raw::Types;
 
+use GLib::Object::Supplyish;
+
 role GDA::UI::Roles::Signals::Data::Selector {
   has %!signals-guds;
 
@@ -26,7 +28,7 @@ role GDA::UI::Roles::Signals::Data::Selector {
         },
         Pointer, 0
       );
-      [ 𝒮.Supply, $obj, $hid ];
+      [ self.create-signal-supply($signal, 𝒮), $obj, $hid ];
     };
     %!signals-guds{$signal}[0].tap(&handler) with &handler;
     %!signals-guds{$signal}[0];

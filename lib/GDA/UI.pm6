@@ -21,3 +21,5 @@ sub gdaui_init ()
   is native(gdaui)
   is export
 { * }
+
+INIT { GDA::UI.init }

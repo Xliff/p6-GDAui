@@ -68,7 +68,7 @@ sub gdaui_combo_is_null_selected (GdauiCombo $combo)
 { * }
 
 sub gdaui_combo_new ()
-  returns GtkWidget
+  returns GdauiCombo
   is native(gdaui)
   is export
 { * }
@@ -78,7 +78,7 @@ sub gdaui_combo_new_with_model (
   gint         $n_cols,
   CArray[gint] $cols_index
 )
-  returns GtkWidget
+  returns GdauiCombo
   is native(gdaui)
   is export
 { * }

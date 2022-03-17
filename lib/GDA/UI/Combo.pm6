@@ -8,14 +8,18 @@ use GDA::UI::Raw::Combo;
 
 use GTK::ComboBox;
 
+use GDA::UI::Roles::Data::Selector;
+
 our subset GdauiComboAncestry is export of Mu
-  where GdauiCombo | GtkComboBoxAncestry;
+  where GdauiCombo | GdauiDataSelector | GtkComboBoxAncestry;
 
 class GDA::UI::Combo is GTK::ComboBox {
+  also does GDA::UI::Roles::Data::Selector;
+
   has GdauiCombo $!guc is implementor;
 
-  submethod BUILD( :$gda-combo ) {
-    self.setGdauiCombo($gda-combo) if $gda-combo;
+  submethod BUILD( :$gda-ui-combo ) {
+    self.setGdauiCombo($gda-ui-combo) if $gda-ui-combo;
   }
 
   method setGdauiCombo (GdauiComboAncestry $_) {
@@ -23,34 +27,41 @@ class GDA::UI::Combo is GTK::ComboBox {
 
     $!guc = do {
       when GdauiCombo {
-        $to-parent = cast(GtkBox, $_);
+        $to-parent = cast(GtkComboBox, $_);
         $_;
+      }
+
+      when GdauiDataSelector {
+        $to-parent = cast(GtkComboBox, $_);
+        $!guds     = $_;
+        cast(GdauiCombo, $_);
       }
 
       default {
         $to-parent = $_;
-        cast(GtkComboBox, $_);
+        cast(GdauiCombo, $_);
       }
     }
     self.setGtkComboBox($to-parent);
+    self.roleInit-GdauiDataSelector;
   }
 
   method GDA::Raw::Definitions::GdauiCombo
     is also<GdauiCombo>
   { $!guc }
 
-  multi method new (GdauiComboAncestry $gda-combo, :$ref = True) {
-    return Nil unless $gda-combo;
+  multi method new (GdauiComboAncestry $gda-ui-combo, :$ref = True) {
+    return Nil unless $gda-ui-combo;
 
-    my $o = self.bless(:$gda-combo);
+    my $o = self.bless(:$gda-ui-combo);
     $o.ref if $ref;
     $o;
   }
 
   multi method new {
-    my $gdaui-combo = gdaui_combo_new();
+    my $gda-ui-combo = gdaui_combo_new();
 
-    $gdaui-combo ?? self.bless( :$gdaui-combo ) !! Nil;
+    $gda-ui-combo ?? self.bless( :$gda-ui-combo ) !! Nil;
   }
 
   proto method new_with_model (|)
@@ -70,9 +81,9 @@ class GDA::UI::Combo is GTK::ComboBox {
   ) {
     my gint $n  = $n_cols;
 
-    my $gdaui-combo = gdaui_combo_new_with_model($model, $n, $cols_index);
+    my $gda-ui-combo = gdaui_combo_new_with_model($model, $n, $cols_index);
 
-    $gdaui-combo ?? self.bless( :$gdaui-combo ) !! Nil;
+    $gda-ui-combo ?? self.bless( :$gda-ui-combo ) !! Nil;
   }
 
   method add_null (Int() $add_null) is also<add-null> {

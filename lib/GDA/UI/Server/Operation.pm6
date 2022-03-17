@@ -40,6 +40,9 @@ class GDA::UI::Server::Operation is GTK::Box {
     is also<GdauiServerOperation>
   { $!guso }
 
+  proto method new (|)
+  { * }
+
   multi method new (
     GdauiServerOperationAncestry  $gda-server-operation,
                                  :$ref             = True
